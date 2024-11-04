@@ -1,24 +1,25 @@
+local m = require("util").lazy_map
+
 return {
-  "nvim-lua/popup.nvim",   -- An implementation of the Popup API from vim in Neovim
-  "nvim-lua/plenary.nvim", -- Useful lua functions used ny lots of plugins
-  'simrat39/symbols-outline.nvim',
-  { "windwp/nvim-ts-autotag", dependencies = "nvim-treesitter" },
-  "neovim/nvim-lspconfig",
-  ({ "mfussenegger/nvim-dap", dependencies = { "rcarriga/nvim-dap-ui" } }),
-  "leoluz/nvim-dap-go",
-  "sharkdp/fd",
-  {
-    "christoomey/vim-tmux-navigator",
-    lazy = false,
-  },
-  {
-    "sbdchd/neoformat",
-  },
-  -- {
-  --     'akinsho/bufferline.nvim',
-  --     version = "*",
-  --     dependencies = 'nvim-tree/nvim-web-devicons',
-  --     config = true,
-  -- },
-  'erikzaadi/vim-ansible-yaml',
+	{
+		"dstein64/vim-startuptime",
+		lazy = false,
+	},
+	{
+		"lambdalisue/suda.vim",
+		event = "BufReadPre",
+	},
+	{
+		"romainl/vim-cool",
+		event = "BufReadPre",
+	},
+	{
+		"famiu/bufdelete.nvim",
+		dependencies = "schickling/vim-bufonly",
+		cmd = { "BufOnly", "Bdelete" },
+	},
+	{
+		"folke/neoconf.nvim",
+		lazy = true,
+	},
 }
