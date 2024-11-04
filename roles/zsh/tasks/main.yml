@@ -1,7 +1,7 @@
 ---
 - name: "Determine user home directory"
   set_fact:
-    user_home: "{{ '/home/' + ansible_env.USER }}"
+    user_home: "{{ '/home/deekline' if ansible_env.USER == 'root' else '/home/' + ansible_env.USER }}"
 
 - name: "{{ role_name }} | Checking for Distribution Config: {{ ansible_distribution }}"
   ansible.builtin.stat:
