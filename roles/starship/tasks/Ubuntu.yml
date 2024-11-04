@@ -12,3 +12,4 @@
     cmd: set -o pipefail && curl -fsSL https://starship.rs/install.sh | sudo sh -s -- --force
   args:
     creates: /usr/local/bin/starship
+    executable: /bin/bash
