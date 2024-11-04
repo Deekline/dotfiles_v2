@@ -27,6 +27,10 @@
   ansible.builtin.debug:
     var: ohmyzsh_is_installed
 
+- name: "ZSH | Debug home directory exists"
+  ansible.builtin.debug:
+    var: ansible_user_dir
+
 - name: "ZSH | Install oh-my-zsh"
   when: not ohmyzsh_is_installed
   block:
@@ -58,7 +62,7 @@
 - name: "ZSH | Copy .zshrc"
   ansible.builtin.copy:
     src: ".zshrc"
-    dest: "{{ ansible_user_dir }}/files/.zshrc"
+    dest: "{{ ansible_user_dir }}/.zshrc"
     mode: "0644"
 #
 # - name: "ZSH | Copy .profile"
