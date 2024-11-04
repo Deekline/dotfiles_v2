@@ -58,7 +58,7 @@
 - name: "ZSH | Copy .zshrc"
   ansible.builtin.copy:
     src: ".zshrc"
-    dest: "{{ ansible_user_dir }}/.zshrc"
+    dest: "{{ ansible_user_dir }}/files/.zshrc"
     mode: "0644"
 #
 # - name: "ZSH | Copy .profile"
