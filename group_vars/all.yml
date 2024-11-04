@@ -9,7 +9,8 @@ default_roles:
   - gh
   - git
   - go
-  - kitty
+  #- kitty
+  - warp
   - lazygit
   - lsd
   - lua
