@@ -90,3 +90,6 @@
   community.general.npm:
     name: "{{ item }}"
     global: true
+  with_items:
+    - bun
+    - blitz
