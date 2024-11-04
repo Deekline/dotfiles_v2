@@ -16,7 +16,7 @@
 
 - name: "ZSH | Detect oh-my-zsh"
   ansible.builtin.stat:
-    path: "{{ ansible_user_dir }}/.oh-my-zsh"
+    path: "{{ custom_user_dir }}/.oh-my-zsh"
   register: ohmyzsh
 
 - name: "ZSH | Register oh-my-zsh state"
@@ -29,7 +29,7 @@
 
 - name: "ZSH | Debug home directory exists"
   ansible.builtin.debug:
-    var: ansible_user_dir
+    var: custom_user_dir
 
 - name: "ZSH | Install oh-my-zsh"
   when: not ohmyzsh_is_installed
@@ -37,7 +37,7 @@
     - name: "ZSH | Download oh-my-zsh Install Script"
       ansible.builtin.get_url:
         url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
-        dest: /{{ ansible_user_dir }}/oh-my-zsh.install.sh
+        dest: /{{ custom_user_dir }}/oh-my-zsh.install.sh
         force: true
         mode: "0755"
       notify:
@@ -45,7 +45,7 @@
 
     - name: "ZSH | Run the install script"
       ansible.builtin.script:
-        cmd: /{{ ansible_user_dir }}/oh-my-zsh.install.sh --unattended
+        cmd: /{{ custom_user_dir }}/oh-my-zsh.install.sh --unattended
 
 - name: "ZSH | Install Custom Plugins"
   ansible.builtin.git:
@@ -62,7 +62,7 @@
 - name: "ZSH | Copy .zshrc"
   ansible.builtin.copy:
     src: ".zshrc"
-    dest: "{{ ansible_user_dir }}/.zshrc"
+    dest: "{{ custom_user_dir }}/.zshrc"
     mode: "0644"
 #
 # - name: "ZSH | Copy .profile"
@@ -73,7 +73,7 @@
 
 - name: "ZSH | Copy custom zsh config"
   ansible.builtin.copy:
-    dest: "{{ ansible_user_dir }}/.config/"
+    dest: "{{ custom_user_dir }}/.config/"
     src: "zsh"
     mode: "0644"
     directory_mode: "0755"
@@ -96,7 +96,7 @@
 
 - name: "ZSH | Copy custom zsh config for os: {{ zsh_os_config.stat.path | basename }}"
   ansible.builtin.copy:
-    dest: "{{ ansible_user_dir }}/.config/zsh/"
+    dest: "{{ custom_user_dir }}/.config/zsh/"
     src: "{{ zsh_os_config.stat.path }}/"
     mode: "0644"
     force: true
