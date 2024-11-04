@@ -1,4 +1,8 @@
 ---
+- name: "Determine user home directory"
+  set_fact:
+    user_home: "{{ '/home/deekline' if ansible_env.USER == 'root' else '/home/' + ansible_env.USER }}"
+
 - name: "{{ role_name }} | Checking for Distribution Config: {{ ansible_distribution }}"
   ansible.builtin.stat:
     path: "{{ role_path }}/tasks/{{ ansible_distribution }}.yml"
@@ -11,13 +15,13 @@
 - name: "Neovim | Config folder"
   ansible.builtin.file:
     mode: "0755"
-    path: "{{ ansible_user_dir }}/.config/nvim"
+    path: "{{ user_home }}/.config/nvim"
     state: directory
 
 - name: "Neovim | Create symlink to role files directory"
   ansible.builtin.file:
     src: "{{ role_path }}/files"
-    dest: "{{ ansible_user_dir }}/.config/nvim"
+    dest: "{{ user_home }}/.config/nvim"
     state: link
     force: true
 
