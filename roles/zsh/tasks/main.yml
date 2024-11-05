@@ -48,7 +48,7 @@
   ansible.builtin.git:
     repo: "{{ item.repo }}"
     dest: "~/.oh-my-zsh/custom/plugins/{{ item.name }}"
-    update: true
+    update: false
     force: true
     depth: 1
   loop:
