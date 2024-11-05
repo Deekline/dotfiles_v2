@@ -13,8 +13,8 @@
   become: true
 
 - name: "Neovim | {{ ansible_distribution }} | Install"
-  ansible.builtin.apt_repository:
-    repo: ppa:neovim-ppa/unstable
+  ansible.builtin.apt:
+    name: neovim 
     state: present
     mode: "0644"
   become: true
