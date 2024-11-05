@@ -49,6 +49,7 @@
     repo: "{{ item.repo }}"
     dest: "~/.oh-my-zsh/custom/plugins/{{ item.name }}"
     update: true
+    force: true
     depth: 1
   loop:
     - repo: https://github.com/zsh-users/zsh-autosuggestions
