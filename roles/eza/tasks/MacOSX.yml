@@ -1,0 +1,5 @@
+---
+- name: "EZA | MacOSX | Install EZA"
+  community.general.cargo:
+    name: eza
+    state: present

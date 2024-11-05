@@ -1,6 +1,6 @@
 default_roles:
   - system
-  - bash
+  #- bash
   - bat
   - btop
   #- flatpak
@@ -9,8 +9,9 @@ default_roles:
   - gh
   - git
   - go
+  - rust
   #- kitty
-  - warp
+  #- warp
   - lazygit
   - lsd
   - lua
