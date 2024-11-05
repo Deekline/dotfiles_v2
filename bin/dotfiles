@@ -198,13 +198,13 @@ Darwin)
   ;;
 esac
 
-#if ! [[ -d "$DOTFILES_DIR" ]]; then
-#  __task "Cloning repository"
-#  _cmd "git clone --quiet https://github.com/TechDufus/dotfiles.git $DOTFILES_DIR"
-#else
-#  __task "Updating repository"
-#  _cmd "git -C $DOTFILES_DIR pull --quiet"
-#fi
+if ! [[ -d "$DOTFILES_DIR" ]]; then
+  __task "Cloning repository"
+  _cmd "git clone --quiet https://github.com/TechDufus/dotfiles.git $DOTFILES_DIR"
+else
+  __task "Updating repository"
+  _cmd "git -C $DOTFILES_DIR pull --quiet"
+fi
 
 pushd "$DOTFILES_DIR" 2>&1 >/dev/null
 update_ansible_galaxy "$ID"
