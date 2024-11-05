@@ -1,44 +1,56 @@
+---
 - name: "NPM | Get latest STABLE NodeJS version"
-  ansible.builtin.shell:
-    cmd: curl -sL https://nodejs.org/dist/index.json | jq -r '.[] | select(.lts) | .version' | head -n 1
+  ansible.builtin.shell: |
+    curl -sL https://nodejs.org/dist/index.json | jq -r '.[] | select(.lts) | .version' | head -n 1
   register: nodejs_latest_version
   changed_when: false
 
-- name: "NPM | Debug latest NodeJS version"
-  ansible.builtin.debug:
-    msg: "Latest NodeJS version: {{ nodejs_latest_version.stdout }}"
+- name: "NPM | Check if NodeJS is installed"
+  ansible.builtin.command: node --version
+  register: nodejs_installed
+  failed_when: false
+  changed_when: false
 
-- name: "NPM | Register Package Name"
+- name: "NPM | Register update needed"
   ansible.builtin.set_fact:
-    nodejs_package_name: "node-{{ nodejs_latest_version.stdout }}-{{ ansible_system | lower }}-{{ ansible_machine | replace('x86_64', 'x64') | replace('aarch64', 'arm64') }}"
+    nodejs_install_needed: true
+  when:
+    nodejs_installed.rc != 0
 
-- name: "NPM | Debug download URL"
-  ansible.builtin.debug:
-    msg: "Download URL: https://nodejs.org/dist/{{ nodejs_latest_version.stdout }}/{{ nodejs_package_name }}.tar.xz"
+- name: "NPM | Install NodeJS"
+  become: true
+  when: nodejs_install_needed is defined and nodejs_install_needed
+  block:
+    - name: "NPM | Get System Arch"
+      ansible.builtin.set_fact:
+        nodejs_arch: "{{ ansible_machine | replace('x86_64', 'x64') | replace('aarch64', 'arm64') }}"
 
-- name: "NPM | Download NodeJS"
-  ansible.builtin.get_url:
-    url: "https://nodejs.org/dist/{{ nodejs_latest_version.stdout }}/{{ nodejs_package_name }}.tar.xz"
-    dest: "/tmp/{{ nodejs_package_name }}.tar.xz"
-    mode: "0644"
+    - name: "NPM | Download NodeJS"
+      ansible.builtin.get_url:
+        url: "https://nodejs.org/dist/{{ nodejs_latest_version.stdout }}/node-{{ nodejs_latest_version.stdout }}-{{ ansible_system | lower }}-{{ nodejs_arch }}.tar.xz"
+        dest: /tmp/nodejs.tar.xz
 
-- name: "NPM | Ensure Extraction Directory Exists"
-  ansible.builtin.file:
-    path: "/tmp/{{ nodejs_package_name }}"
-    state: directory
-    mode: "0755"
+    - name: "NPM | Ensure Extraction NodeJS directory exists"
+      ansible.builtin.file:
+        path: /usr/local/nodejs
+        state: directory
+        mode: "0755"
 
-- name: "NPM | Extract NodeJS"
-  ansible.builtin.unarchive:
-    src: "/tmp/{{ nodejs_package_name }}.tar.xz"
-    dest: "/tmp/{{ nodejs_package_name }}"
-    remote_src: true
-    extra_opts: "--strip-components=1"
+    - name: "NPM | Extract NodeJS"
+      ansible.builtin.unarchive:
+        src: /tmp/nodejs.tar.xz
+        dest: /usr/local/nodejs
+        remote_src: true
+        extra_opts: "--strip-components=1"
 
-- name: "NPM | List extracted files"
-  ansible.builtin.command: ls -l /tmp/{{ nodejs_package_name }}
-  register: extracted_files
+    - name: "NPM | Symlink NodeJS Binary"
+      ansible.builtin.file:
+        src: /usr/local/nodejs/bin/node
+        dest: /usr/local/bin/node
+        state: link
 
-- name: "NPM | Show extracted files"
-  ansible.builtin.debug:
-    var: extracted_files.stdout_lines
+    - name: "NPM | Symlink NPM Binary"
+      ansible.builtin.file:
+        src: /usr/local/nodejs/bin/npm
+        dest: /usr/local/bin/npm
+        state: link
