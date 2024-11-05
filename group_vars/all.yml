@@ -24,4 +24,4 @@ default_roles:
   - tmux
   - zoxide
   - zsh
-  - eza
+  - zeza
