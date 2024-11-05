@@ -13,6 +13,7 @@
   ansible.builtin.package:
     name: zsh
     state: present
+  become: true
 
 - name: "ZSH | Detect oh-my-zsh"
   ansible.builtin.stat:
