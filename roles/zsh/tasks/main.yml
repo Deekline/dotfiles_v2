@@ -1,8 +1,4 @@
 ---
-- name: "Determine user home directory"
-  set_fact:
-    user_home: "{{ '/home/deekline' if ansible_env.USER == 'root' else '/home/' + ansible_env.USER }}"
-
 - name: "{{ role_name }} | Checking for Distribution Config: {{ ansible_distribution }}"
   ansible.builtin.stat:
     path: "{{ role_path }}/tasks/{{ ansible_distribution }}.yml"
@@ -12,15 +8,9 @@
   ansible.builtin.include_tasks: "{{ ansible_distribution }}.yml"
   when: distribution_config.stat.exists
 
-# Ensure Zsh is installed
-- name: "ZSH | Install zsh"
-  ansible.builtin.package:
-    name: zsh
-    state: present
-
 - name: "ZSH | Detect oh-my-zsh"
   ansible.builtin.stat:
-    path: "{{ user_home }}/.oh-my-zsh"
+    path: "{{ ansible_user_dir }}/.oh-my-zsh"
   register: ohmyzsh
 
 - name: "ZSH | Register oh-my-zsh state"
@@ -31,17 +21,13 @@
   ansible.builtin.debug:
     var: ohmyzsh_is_installed
 
-- name: "ZSH | Debug home directory exists"
-  ansible.builtin.debug:
-    var: user_home
-
 - name: "ZSH | Install oh-my-zsh"
   when: not ohmyzsh_is_installed
   block:
     - name: "ZSH | Download oh-my-zsh Install Script"
       ansible.builtin.get_url:
         url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
-        dest: /{{ user_home }}/oh-my-zsh.install.sh
+        dest: /{{ ansible_user_dir }}/oh-my-zsh.install.sh
         force: true
         mode: "0755"
       notify:
@@ -49,7 +35,7 @@
 
     - name: "ZSH | Run the install script"
       ansible.builtin.script:
-        cmd: /{{ user_home }}/oh-my-zsh.install.sh --unattended
+        cmd: /{{ ansible_user_dir }}/oh-my-zsh.install.sh --unattended
 
 - name: "ZSH | Install Custom Plugins"
   ansible.builtin.git:
@@ -66,7 +52,7 @@
 - name: "ZSH | Copy .zshrc"
   ansible.builtin.copy:
     src: ".zshrc"
-    dest: "{{ user_home }}/.zshrc"
+    dest: "{{ ansible_user_dir }}/.zshrc"
     mode: "0644"
 #
 # - name: "ZSH | Copy .profile"
@@ -77,7 +63,7 @@
 
 - name: "ZSH | Copy custom zsh config"
   ansible.builtin.copy:
-    dest: "{{ user_home }}/.config/"
+    dest: "{{ ansible_user_dir }}/.config/"
     src: "zsh"
     mode: "0644"
     directory_mode: "0755"
@@ -100,7 +86,7 @@
 
 - name: "ZSH | Copy custom zsh config for os: {{ zsh_os_config.stat.path | basename }}"
   ansible.builtin.copy:
-    dest: "{{ user_home }}/.config/zsh/"
+    dest: "{{ ansible_user_dir }}/.config/zsh/"
     src: "{{ zsh_os_config.stat.path }}/"
     mode: "0644"
     force: true
