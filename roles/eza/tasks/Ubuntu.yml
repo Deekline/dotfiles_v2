@@ -1,8 +1,7 @@
 ---
-- name: "EZA | {{ ansible_distribution }} | Install EZA"
-  ansible.builtin.cargo:
-    name:
-      - eza 
+- name: "EZA | Install EZA"
+  community.general.cargo:
+    name: eza 
     state: present
   become: true
   when: ansible_distribution_version >= '21.04'
