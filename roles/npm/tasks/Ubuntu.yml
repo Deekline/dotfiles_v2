@@ -1,87 +1,81 @@
 ---
 - name: "NPM | Get latest STABLE NodeJS version"
   ansible.builtin.shell:
-    cmd: curl -sL https://nodejs.org/dist/index.json | jq -r '.[] | select(.lts) | .version' | head -n 1
+    cmd: "curl -sL https://nodejs.org/dist/index.json | jq -r '.[] | select(.lts) | .version' | head -n 1"
   register: nodejs_latest_version
   changed_when: false
 
 - name: "NPM | Check if NodeJS is installed"
-  ansible.builtin.command: node --version
+  ansible.builtin.command: "node --version"
   register: nodejs_installed
   failed_when: false
   changed_when: false
 
 - name: "NPM | Check if NodeJS is up to date"
-  ansible.builtin.command: node --version
+  ansible.builtin.command: "node --version"
   register: nodejs_up_to_date
   failed_when: false
   changed_when: false
 
-- name: "NPM | Show NodeJS version"
+- name: "NPM | Show Installed NodeJS version"
   ansible.builtin.debug:
     msg: "Installed NodeJS version: {{ nodejs_installed.stdout }}"
 
-- name: "NPM | Show NodeJS latest version"
+- name: "NPM | Show Latest NodeJS version"
   ansible.builtin.debug:
     msg: "Online NodeJS LTS version: {{ nodejs_latest_version.stdout }}"
 
-- name: "NPM | Register update needed"
+- name: "NPM | Register if Update Needed"
   ansible.builtin.set_fact:
     nodejs_install_needed: true
-  when:
-    # - nodejs_installed.rc == 0
-    # - nodejs_up_to_date.rc != 0
-    - nodejs_up_to_date.stdout != nodejs_latest_version.stdout
+  when: nodejs_up_to_date.stdout != nodejs_latest_version.stdout
 
 - name: "NPM | Install NodeJS"
   become: true
-  when:
-    - nodejs_install_needed is defined
-    - nodejs_install_needed
+  when: nodejs_install_needed is defined and nodejs_install_needed
   block:
-    - name: "NPM | Get System Arch"
+    - name: "NPM | Determine System Architecture"
       ansible.builtin.set_fact:
         nodejs_arch: "{{ ansible_machine | replace('x86_64', 'x64') | replace('aarch64', 'arm64') }}"
 
-    - name: "NPM | Register Pagkage Name"
+    - name: "NPM | Set NodeJS Package Name"
       ansible.builtin.set_fact:
         nodejs_package_name: "node-{{ nodejs_latest_version.stdout }}-{{ ansible_system | lower }}-{{ nodejs_arch }}"
 
     - name: "NPM | Download NodeJS"
       ansible.builtin.get_url:
         url: "https://nodejs.org/dist/{{ nodejs_latest_version.stdout }}/{{ nodejs_package_name }}.tar.xz"
-        dest: /tmp/{{ nodejs_package_name }}.tar.xz
+        dest: "/tmp/{{ nodejs_package_name }}.tar.xz"
         mode: "0644"
-
-    - name: NPM | Ensure Extraction NodeJS directory exists
-      ansible.builtin.file:
-        path: /tmp/{{ nodejs_package_name }}
-        state: directory
-        mode: "0755"
 
     - name: "NPM | Extract NodeJS"
       ansible.builtin.unarchive:
-        src: /tmp/{{ nodejs_package_name }}.tar.xz
-        dest: /tmp/{{ nodejs_package_name }}
+        src: "/tmp/{{ nodejs_package_name }}.tar.xz"
+        dest: "/usr/local/nodejs-{{ nodejs_latest_version.stdout }}"
         remote_src: true
         extra_opts: "--strip-components=1"
 
-    - name: "NPM | Copy NodeJS"
-      ansible.builtin.copy:
-        src: /tmp/{{ nodejs_package_name }}/bin/
-        dest: /usr/local/bin/*
-        remote_src: true
-        mode: "0644"
-
-    - name: NPM | Ensure NodeJS Modules directory exists
+    - name: "NPM | Symlink NodeJS Binary"
       ansible.builtin.file:
-        path: /usr/local/lib/node_modules
-        state: directory
+        src: "/usr/local/nodejs-{{ nodejs_latest_version.stdout }}/bin/node"
+        dest: "/usr/local/bin/node"
+        state: link
+
+    - name: "NPM | Symlink NPM Binary"
+      ansible.builtin.file:
+        src: "/usr/local/nodejs-{{ nodejs_latest_version.stdout }}/bin/npm"
+        dest: "/usr/local/bin/npm"
+        state: link
+
+    - name: "NPM | Ensure PATH to NodeJS"
+      ansible.builtin.lineinfile:
+        path: /etc/profile.d/nodejs.sh
+        line: 'export PATH="/usr/local/nodejs-{{ nodejs_latest_version.stdout }}/bin:$PATH"'
+        create: yes
         mode: "0755"
 
-    - name: "NPM | Copy NodeJS Modules"
-      ansible.builtin.copy:
-        src: /tmp/{{ nodejs_package_name }}/lib/node_modules/
-        dest: /usr/local/lib/node_modules/*
-        remote_src: true
-        mode: "0644"
+- name: "NPM | Display NodeJS Version Post-Install"
+  ansible.builtin.command: "node --version"
+  register: nodejs_check
+  changed_when: false
+  failed_when: nodejs_check.rc != 0
