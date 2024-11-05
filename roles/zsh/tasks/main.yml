@@ -8,6 +8,12 @@
   ansible.builtin.include_tasks: "{{ ansible_distribution }}.yml"
   when: distribution_config.stat.exists
 
+# Ensure Zsh is installed
+- name: "ZSH | Install zsh"
+  ansible.builtin.package:
+    name: zsh
+    state: present
+
 - name: "ZSH | Detect oh-my-zsh"
   ansible.builtin.stat:
     path: "{{ ansible_user_dir }}/.oh-my-zsh"
