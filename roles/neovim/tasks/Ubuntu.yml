@@ -16,5 +16,4 @@
   ansible.builtin.apt:
     name: neovim 
     state: present
-    mode: "0644"
   become: true
